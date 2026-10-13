@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinguaAI — Personalized AI Language Tutor (Local Storage)</title>
+  
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap 5 CSS & Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+
+  <div class="app-wrapper">
+    <!-- Mobile Overlay -->
+    <div id="sidebarOverlay" class="position-fixed top-0 start-0 w-100 h-100 bg-dark opacity-50 d-none" style="z-index: 1035;"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="appSidebar">
+      <a href="#dashboard" class="sidebar-brand" onclick="window.navigateToView('dashboard')">
+        <div class="brand-icon-box">
+          <i class="bi bi-translate"></i>
+        </div>
+        <div class="brand-title">Lingua<span>AI</span></div>
+      </a>
+
+      <!-- Target Language Indicator -->
+      <div class="px-3 pt-3">
+        <div class="p-2 px-3 rounded-3 bg-light border d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-emerald-subtle text-emerald rounded-circle p-2"><i class="bi bi-globe2"></i></span>
+            <div>
+              <small class="text-muted d-block" style="font-size: 0.70rem; line-height: 1;">TARGET LANGUAGE</small>
+              <strong class="text-dark" id="sidebarTargetLangBadge" style="font-size: 0.88rem;">Spanish</strong>
+            </div>
+          </div>
+          <span class="badge bg-emerald-subtle text-emerald" id="sidebarLevelBadge" style="font-size: 0.72rem;">Beginner</span>
+        </div>
+      </div>
+
+      <ul class="sidebar-nav">
+        <li class="nav-section-title">Main Menu</li>
+        <li>
+          <a href="#dashboard" class="sidebar-link active" data-view="dashboard">
+            <i class="bi bi-grid-1x2"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#tutor" class="sidebar-link" data-view="tutor">
+            <i class="bi bi-robot"></i>
+            <span>AI Tutor</span>
+          </a>
+        </li>
+        <li>
+          <a href="#lessons" class="sidebar-link" data-view="lessons">
+            <i class="bi bi-journal-bookmark"></i>
+            <span>Lessons</span>
+          </a>
+        </li>
+        <li>
+          <a href="#vocabulary" class="sidebar-link" data-view="vocabulary">
+            <i class="bi bi-card-text"></i>
+            <span>Vocabulary</span>
+          </a>
+        </li>
+        <li>
+          <a href="#quizzes" class="sidebar-link" data-view="quizzes">
+            <i class="bi bi-patch-check"></i>
+            <span>Practice Quizzes</span>
+          </a>
+        </li>
+
+        <li class="nav-section-title mt-2">Analytics & Logs</li>
+        <li>
+          <a href="#analytics" class="sidebar-link" data-view="analytics">
+            <i class="bi bi-graph-up-arrow"></i>
+            <span>My Progress</span>
+          </a>
+        </li>
+        <li>
+          <a href="#history" class="sidebar-link" data-view="history">
+            <i class="bi bi-clock-history"></i>
+            <span>Learning History</span>
+          </a>
+        </li>
+
+        <li class="nav-section-title mt-2">Configuration</li>
+        <li>
+          <a href="#settings" class="sidebar-link" data-view="settings">
+            <i class="bi bi-gear"></i>
+            <span>Settings & Storage</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- LocalStorage Status Footer -->
+      <div class="sidebar-footer">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="badge-storage"><i class="bi bi-database-check"></i> Local Storage</span>
+          <small class="text-muted" style="font-size: 0.72rem;">100% Client-Side</small>
+        </div>
+        <div class="text-muted" style="font-size: 0.75rem; line-height: 1.3;">
+          Zero cloud DB dependency. All learning records persist safely in your browser.
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <!-- Top Navbar -->
+      <header class="top-navbar">
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-light d-lg-none p-2 border" id="sidebarToggleBtn" aria-label="Toggle sidebar">
+            <i class="bi bi-list fs-5"></i>
+          </button>
+          
+          <div class="d-flex align-items-center gap-2">
+            <label for="topQuickLangSelect" class="text-muted small fw-medium d-none d-sm-inline">Learning:</label>
+            <select class="form-select form-select-sm fw-semibold border rounded-pill px-3" id="topQuickLangSelect" style="width: auto; background-color: var(--primary-subtle); color: var(--primary-dark); border-color: #bbf7d0;">
+              <option value="Spanish">🇪🇸 Spanish</option>
+              <option value="French">🇫🇷 French</option>
+              <option value="German">🇩🇪 German</option>
+              <option value="Italian">🇮🇹 Italian</option>
+              <option value="Japanese">🇯🇵 Japanese</option>
+              <option value="English">🇬🇧 English</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+          <!-- Daily Streak Indicator -->
+          <div class="d-flex align-items-center gap-2 px-3 py-1 bg-light border rounded-pill">
+            <span class="text-warning fs-5"><i class="bi bi-fire"></i></span>
+            <div class="d-flex flex-column" style="line-height: 1;">
+              <span class="fw-bold text-dark small" id="dashStreakCount">4 Days</span>
+              <small class="text-muted" style="font-size: 0.65rem;">STREAK</small>
+            </div>
+          </div>
+
+          <!-- User Display -->
+          <div class="d-flex align-items-center gap-2">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="rounded-circle border" style="width: 36px; height: 36px; object-fit: cover;">
+            <div class="d-none d-md-block text-start">
+              <span class="d-block fw-bold text-dark small" id="topUserDisplayName" style="line-height: 1.1;">Alex Learner</span>
+              <small class="text-emerald" style="font-size: 0.70rem;">LinguaAI Scholar</small>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- View Bodies -->
+      <main class="content-body">
+
+        <!-- =================================================================
+             VIEW 1: DASHBOARD
+             ================================================================= -->
+        <section class="view-section active" id="view-dashboard">
+          <!-- Welcome Hero Banner -->
+          <div class="card-custom p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);">
+            <div class="row align-items-center">
+              <div class="col-lg-8">
+                <span class="badge bg-emerald text-white mb-2 px-3 py-2 rounded-pill"><i class="bi bi-stars me-1"></i> Welcome back, Alex!</span>
+                <h2 class="display-6 fw-bold mb-2">Ready to level up your language journey today?</h2>
+                <p class="mb-4 opacity-90 fs-6">
+                  Practice conversing with your AI Tutor, master spaced-repetition flashcards, and complete your personalized daily lesson.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-light fw-bold px-4 py-2 text-emerald shadow-sm rounded-pill" data-nav-target="tutor">
+                    <i class="bi bi-robot me-1"></i> Start AI Chat
+                  </button>
+                  <button class="btn btn-outline-light fw-semibold px-4 py-2 rounded-pill" data-nav-target="lessons">
+                    <i class="bi bi-journal-bookmark me-1"></i> Next Lesson
+                  </button>
+                </div>
+              </div>
+              <div class="col-lg-4 text-center d-none d-lg-block">
+                <div class="p-4 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 backdrop-blur">
+                  <div class="fs-1 mb-2">🎯</div>
+                  <h6 class="fw-bold mb-1">Today's Goal</h6>
+                  <div class="progress my-2" style="height: 10px; background-color: rgba(255,255,255,0.25);">
+                    <div class="progress-bar bg-white" id="dashGoalProgressBar" style="width: 50%;"></div>
+                  </div>
+                  <small id="dashGoalProgressText" class="opacity-90">10 / 20 mins (50%)</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 Stats Cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+              <div class="card-custom p-3 d-flex align-items-center gap-3">
+                <div class="stat-icon stat-icon-amber">
+                  <i class="bi bi-fire"></i>
+                </div>
+                <div>
+                  <small class="text-muted text-uppercase fw-bold" style="font-size: 0.72rem;">Streak</small>
+                  <h4 class="fw-bold mb-0 text-dark" id="dashStreakCount">4 Days</h4>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+              <div class="card-custom p-3 d-flex align-items-center gap-3">
+                <div class="stat-icon stat-icon-emerald">
+                  <i class="bi bi-clock-history"></i>
+                </div>
+                <div>
+                  <small class="text-muted text-uppercase fw-bold" style="font-size: 0.72rem;">Study Time</small>
+                  <h4 class="fw-bold mb-0 text-dark" id="dashMinutesCount">45 min</h4>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+              <div class="card-custom p-3 d-flex align-items-center gap-3">
+                <div class="stat-icon stat-icon-blue">
+                  <i class="bi bi-journal-check"></i>
+                </div>
+                <div>
+                  <small class="text-muted text-uppercase fw-bold" style="font-size: 0.72rem;">Lessons Done</small>
+                  <h4 class="fw-bold mb-0 text-dark" id="dashLessonsCount">2 / 4</h4>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+              <div class="card-custom p-3 d-flex align-items-center gap-3">
+                <div class="stat-icon stat-icon-purple">
+                  <i class="bi bi-lightning-charge"></i>
+                </div>
+                <div>
+                  <small class="text-muted text-uppercase fw-bold" style="font-size: 0.72rem;">Total XP</small>
+                  <h4 class="fw-bold mb-0 text-dark" id="dashXpCount">260 XP</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="row g-4 mb-4">
+            <div class="col-lg-8">
+              <div class="card-custom p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <h5 class="fw-bold mb-1 text-dark">Weekly Study Trend</h5>
+                    <small class="text-muted">Daily minutes logged this week</small>
+                  </div>
+                  <span class="badge bg-emerald-subtle text-emerald"><i class="bi bi-graph-up me-1"></i>Active</span>
+                </div>
+                <div style="height: 250px;">
+                  <canvas id="dashboardStudyChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="card-custom p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <h5 class="fw-bold mb-1 text-dark">Vocabulary Mastery</h5>
+                    <small class="text-muted">Mastered vs learning cards</small>
+                  </div>
+                  <span class="badge bg-light text-dark border">Flashcards</span>
+                </div>
+                <div style="height: 250px;">
+                  <canvas id="dashboardVocabChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions & Recent Activity -->
+          <div class="row g-4">
+            <div class="col-lg-6">
+              <div class="card-custom p-4 h-100">
+                <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-lightning-fill text-warning me-2"></i>Quick Actions</h5>
+                <div class="row g-3">
+                  <div class="col-6">
+                    <button class="btn btn-outline-light w-100 p-3 text-start border d-flex align-items-center gap-3 rounded-3" data-nav-target="tutor">
+                      <div class="stat-icon stat-icon-emerald" style="width: 40px; height: 40px;"><i class="bi bi-chat-dots-fill"></i></div>
+                      <div>
+                        <strong class="text-dark d-block small">AI Tutor Chat</strong>
+                        <small class="text-muted" style="font-size: 0.72rem;">Interactive roleplay</small>
+                      </div>
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button class="btn btn-outline-light w-100 p-3 text-start border d-flex align-items-center gap-3 rounded-3" data-nav-target="vocabulary">
+                      <div class="stat-icon stat-icon-blue" style="width: 40px; height: 40px;"><i class="bi bi-card-text"></i></div>
+                      <div>
+                        <strong class="text-dark d-block small">Flashcards</strong>
+                        <small class="text-muted" style="font-size: 0.72rem;">Spaced repetition</small>
+                      </div>
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button class="btn btn-outline-light w-100 p-3 text-start border d-flex align-items-center gap-3 rounded-3" data-nav-target="lessons">
+                      <div class="stat-icon stat-icon-purple" style="width: 40px; height: 40px;"><i class="bi bi-book-half"></i></div>
+                      <div>
+                        <strong class="text-dark d-block small">Lessons Library</strong>
+                        <small class="text-muted" style="font-size: 0.72rem;">Grammar & dialogue</small>
+                      </div>
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button class="btn btn-outline-light w-100 p-3 text-start border d-flex align-items-center gap-3 rounded-3" data-nav-target="quizzes">
+                      <div class="stat-icon stat-icon-amber" style="width: 40px; height: 40px;"><i class="bi bi-patch-question-fill"></i></div>
+                      <div>
+                        <strong class="text-dark d-block small">Practice Quiz</strong>
+                        <small class="text-muted" style="font-size: 0.72rem;">Test your fluency</small>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6">
+              <div class="card-custom p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history text-emerald me-2"></i>Recent Activity</h5>
+                  <button class="btn btn-sm btn-link text-emerald text-decoration-none p-0 fw-semibold" data-nav-target="history">View All</button>
+                </div>
+                <div id="dashRecentActivityFeed">
+                  <!-- Injected via app.js -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             VIEW 2: AI TUTOR CHAT
+             ================================================================= -->
+        <section class="view-section" id="view-tutor">
+          <div class="card-custom p-0 overflow-hidden" id="tutorContainer">
+            <!-- Tutor Header -->
+            <div class="chat-header">
+              <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon stat-icon-emerald" style="width: 44px; height: 44px;">
+                  <i class="bi bi-robot"></i>
+                </div>
+                <div>
+                  <div class="d-flex align-items-center gap-2">
+                    <h5 class="fw-bold mb-0 text-dark">LinguaAI Conversational Tutor</h5>
+                    <span class="badge bg-emerald-subtle text-emerald" id="tutorLanguageBadge">Spanish • Beginner</span>
+                  </div>
+                  <small class="text-muted">Real-time roleplay, pronunciation practice, and grammar doctor</small>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center gap-2">
+                <!-- Scenario Picker -->
+                <select class="form-select form-select-sm border rounded-pill px-3" id="tutorScenarioSelect" style="width: auto;">
+                  <option value="cafe">☕ Ordering at a Café / Tapas</option>
+                  <option value="hotel">🏨 Hotel & Accommodation</option>
+                  <option value="interview">💼 Job Interview Practice</option>
+                  <option value="airport">✈️ Airport & Travel Navigation</option>
+                  <option value="casual">💬 Friendly Casual Chat</option>
+                </select>
+
+                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="clearChatBtn" title="Clear conversation">
+                  <i class="bi bi-trash3 me-1"></i> Clear
+                </button>
+              </div>
+            </div>
+
+            <!-- Messages Stream -->
+            <div class="chat-messages" id="chatMessages" style="min-height: 480px; max-height: 520px;">
+              <!-- Dynamically populated from LocalStorage via tutor.js -->
+            </div>
+
+            <!-- Typing Indicator -->
+            <div id="tutorTypingIndicator" class="px-4 py-2 bg-light border-top d-none">
+              <div class="d-flex align-items-center gap-2 text-muted small">
+                <div class="typing-indicator">
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                </div>
+                <span>AI Tutor is drafting response...</span>
+              </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-area">
+              <!-- Prompt Chips -->
+              <div class="suggested-chips" id="tutorPromptChips">
+                <!-- Injected via tutor.js based on scenario -->
+              </div>
+
+              <form id="chatForm" class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-light border rounded-circle p-2" id="tutorMicBtn" title="Speak with microphone (Web Speech API)" style="width: 44px; height: 44px;">
+                  <i class="bi bi-mic-fill fs-5"></i>
+                </button>
+
+                <input type="text" class="form-control form-control-lg rounded-pill px-4 fs-6" id="chatInput" placeholder="Reply in your target language... (e.g. '¡Hola! Quisiera un café por favor.')" autocomplete="off">
+
+                <button type="submit" class="btn btn-emerald rounded-circle p-2" id="sendBtn" style="width: 44px; height: 44px;">
+                  <i class="bi bi-send-fill fs-5"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             VIEW 3: LESSONS CATALOG & READER
+             ================================================================= -->
+        <section class="view-section" id="view-lessons">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+              <h3 class="fw-bold mb-1 text-dark">Interactive Lessons Catalog</h3>
+              <p class="text-muted mb-0">Structured grammar, vocabulary, real-world dialogues, and assessments.</p>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2">
+              <select class="form-select form-select-sm border rounded-pill" id="lessonLangFilter" style="width: auto;">
+                <option value="all">All Languages</option>
+                <option value="Spanish" selected>Spanish</option>
+                <option value="French">French</option>
+                <option value="German">German</option>
+              </select>
+
+              <select class="form-select form-select-sm border rounded-pill" id="lessonLevelFilter" style="width: auto;">
+                <option value="all">All Levels</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+
+              <button class="btn btn-emerald btn-sm px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#customLessonModal">
+                <i class="bi bi-plus-lg me-1"></i> Create Lesson
+              </button>
+            </div>
+          </div>
+
+          <!-- Lessons Grid -->
+          <div class="row" id="lessonsGrid">
+            <!-- Injected via lessons.js -->
+          </div>
+        </section>
+
+        <!-- =================================================================
+             VIEW 4: VOCABULARY & FLASHCARDS
+             ================================================================= -->
+        <section class="view-section" id="view-vocabulary">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+              <h3 class="fw-bold mb-1 text-dark">Vocabulary Bank & Flashcards</h3>
+              <p class="text-muted mb-0">3D flip cards with spaced repetition, native audio, and custom word tracking.</p>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="exportVocabCsvBtn">
+                <i class="bi bi-download me-1"></i> Export CSV
+              </button>
+              <button class="btn btn-emerald btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addWordModal">
+                <i class="bi bi-plus-lg me-1"></i> Add Word
+              </button>
+            </div>
+          </div>
+
+          <!-- Counts Pills -->
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+              <div class="p-3 bg-white border rounded-3 text-center">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.70rem;">Mastered</small>
+                <h4 class="fw-bold text-success mb-0" id="countVocabMastered">0</h4>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="p-3 bg-white border rounded-3 text-center">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.70rem;">Reviewing</small>
+                <h4 class="fw-bold text-warning mb-0" id="countVocabReviewing">0</h4>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="p-3 bg-white border rounded-3 text-center">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.70rem;">Learning</small>
+                <h4 class="fw-bold text-primary mb-0" id="countVocabLearning">0</h4>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="p-3 bg-white border rounded-3 text-center">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.70rem;">Total Words</small>
+                <h4 class="fw-bold text-dark mb-0" id="countVocabTotal">0</h4>
+              </div>
+            </div>
+          </div>
+
+          <!-- Flashcards Practice Section -->
+          <div class="card-custom p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-card-checklist text-emerald me-2"></i>3D Flashcard Practice</h5>
+              <div class="badge bg-light text-dark border" id="flashcardProgressText">1 / 10</div>
+            </div>
+
+            <!-- 3D Card -->
+            <div class="flashcard-wrapper" id="flashcardWrapper">
+              <div class="flashcard-inner">
+                <!-- Front -->
+                <div class="flashcard-front">
+                  <span class="badge bg-emerald-subtle text-emerald mb-2" id="flashcardFrontCategory">Greetings</span>
+                  <h2 class="display-5 fw-bold text-dark mb-1" id="flashcardFrontWord">¡Hola!</h2>
+                  <div class="text-muted fs-6 mb-3" id="flashcardFrontPhonetic">OH-lah</div>
+                  <div class="d-flex gap-2">
+                    <button class="audio-play-btn" id="flashcardAudioBtn" title="Listen pronunciation">
+                      <i class="bi bi-volume-up-fill"></i>
+                    </button>
+                    <span class="small text-muted align-self-center"><i class="bi bi-hand-index-thumb me-1"></i>Click card to flip</span>
+                  </div>
+                </div>
+
+                <!-- Back -->
+                <div class="flashcard-back">
+                  <span class="badge bg-white text-emerald mb-2">Translation</span>
+                  <h3 class="fw-bold text-white mb-2" id="flashcardBackTranslation">Hello!</h3>
+                  <p class="text-white opacity-90 small mb-3 fst-italic" id="flashcardBackExample">"¡Hola! ¿Cómo estás hoy?"</p>
+                  <small class="text-white opacity-75">Click card to flip back</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Controls -->
+            <div class="d-flex justify-content-between align-items-center">
+              <button class="btn btn-outline-secondary btn-sm px-3 rounded-pill" id="flashcardPrevBtn">
+                <i class="bi bi-chevron-left me-1"></i> Prev
+              </button>
+
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-warning btn-sm px-3 rounded-pill" id="flashcardLearningBtn">
+                  <i class="bi bi-arrow-repeat me-1"></i> Still Learning
+                </button>
+                <button class="btn btn-emerald btn-sm px-3 rounded-pill" id="flashcardMasteredBtn">
+                  <i class="bi bi-check-lg me-1"></i> Mastered!
+                </button>
+              </div>
+
+              <button class="btn btn-outline-secondary btn-sm px-3 rounded-pill" id="flashcardNextBtn">
+                Next <i class="bi bi-chevron-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Words Table -->
+          <div class="card-custom p-4">
+            <div class="row g-3 align-items-center mb-3">
+              <div class="col-md-5">
+                <input type="text" class="form-control form-control-sm rounded-pill px-3" id="vocabSearchInput" placeholder="Search words or translations...">
+              </div>
+              <div class="col-md-4">
+                <select class="form-select form-select-sm rounded-pill" id="vocabCategoryFilter">
+                  <option value="all">All Categories</option>
+                  <option value="Greetings">Greetings</option>
+                  <option value="Courtesy">Courtesy</option>
+                  <option value="Dining">Dining</option>
+                  <option value="Directions">Directions</option>
+                  <option value="Travel">Travel</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select class="form-select form-select-sm rounded-pill" id="vocabMasteryFilter">
+                  <option value="all">All Statuses</option>
+                  <option value="mastered">Mastered</option>
+                  <option value="reviewing">Reviewing</option>
+                  <option value="learning">Learning</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table align-middle table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Word & Pronunciation</th>
+                    <th>Translation</th>
+                    <th>Category</th>
+                    <th>Example Sentence</th>
+                    <th>Mastery</th>
+                    <th class="text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="vocabTableBody">
+                  <!-- Injected via vocab.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             VIEW 5: PRACTICE QUIZZES
+             ================================================================= -->
+        <section class="view-section" id="view-quizzes">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+              <h3 class="fw-bold mb-1 text-dark">Practice Quizzes</h3>
+              <p class="text-muted mb-0">Evaluate your grammar and vocabulary with instant feedback and mistake tracking.</p>
+            </div>
+            
+            <button class="btn btn-emerald btn-sm px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#createQuizModal">
+              <i class="bi bi-plus-lg me-1"></i> Generate Quiz
+            </button>
+          </div>
+
+          <!-- Quizzes List -->
+          <div class="row" id="quizzesGrid">
+            <!-- Injected via quizzes.js -->
+          </div>
+
+          <!-- Attempts History -->
+          <div class="card-custom p-4 mt-4">
+            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-clock-history text-emerald me-2"></i>Recent Quiz Attempts</h5>
+            <div class="table-responsive">
+              <table class="table align-middle table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Quiz Title</th>
+                    <th>Score</th>
+                    <th>XP Earned</th>
+                    <th>Date</th>
+                    <th class="text-end">Result</th>
+                  </tr>
+                </thead>
+                <tbody id="quizAttemptsTable">
+                  <!-- Injected via quizzes.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             VIEW 6: MY PROGRESS & ANALYTICS
+             ================================================================= -->
+        <section class="view-section" id="view-analytics">
+          <div class="mb-4">
+            <h3 class="fw-bold mb-1 text-dark">Progress & Analytics</h3>
+            <p class="text-muted mb-0">Track study consistency, skill mastery radar, and quiz performance trends.</p>
+          </div>
+
+          <!-- Analytics Summary Cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+              <div class="card-custom p-3 text-center">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.72rem;">Active Streak</small>
+                <h3 class="fw-bold text-amber mb-0 mt-1" id="analyticsStreakDays">4 Days</h3>
+              </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+              <div class="card-custom p-3 text-center">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.72rem;">Total Practice</small>
+                <h3 class="fw-bold text-emerald mb-0 mt-1" id="analyticsTotalMins">45 min</h3>
+              </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+              <div class="card-custom p-3 text-center">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.72rem;">Accumulated XP</small>
+                <h3 class="fw-bold text-primary mb-0 mt-1" id="analyticsTotalXp">260 XP</h3>
+              </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+              <div class="card-custom p-3 text-center">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.72rem;">Avg Quiz Score</small>
+                <h3 class="fw-bold text-success mb-0 mt-1" id="analyticsAvgQuizScore">88%</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+              <div class="card-custom p-4 h-100">
+                <h5 class="fw-bold mb-3 text-dark">Weekly Study Time Trend</h5>
+                <div style="height: 260px;">
+                  <canvas id="analyticsStudyChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="card-custom p-4 h-100">
+                <h5 class="fw-bold mb-3 text-dark">Vocabulary Mastery Breakdown</h5>
+                <div style="height: 260px;">
+                  <canvas id="analyticsVocabChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="card-custom p-4 h-100">
+                <h5 class="fw-bold mb-3 text-dark">Skill Competency Radar</h5>
+                <div style="height: 260px;">
+                  <canvas id="analyticsRadarChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="card-custom p-4 h-100">
+                <h5 class="fw-bold mb-3 text-dark">Quiz Performance History</h5>
+                <div style="height: 260px;">
+                  <canvas id="analyticsQuizTrendChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Achievements Badges -->
+          <div class="card-custom p-4">
+            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-award-fill text-warning me-2"></i>Unlocked Milestones & Badges</h5>
+            <div class="row g-3">
+              <div class="col-sm-6 col-md-3">
+                <div class="p-3 border rounded-3 text-center bg-light">
+                  <div class="fs-1 mb-1">🔥</div>
+                  <strong class="d-block small text-dark">Streak Starter</strong>
+                  <small class="text-muted">4+ days practice streak</small>
+                </div>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <div class="p-3 border rounded-3 text-center bg-light">
+                  <div class="fs-1 mb-1">📚</div>
+                  <strong class="d-block small text-dark">Curious Scholar</strong>
+                  <small class="text-muted">Completed 2 lessons</small>
+                </div>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <div class="p-3 border rounded-3 text-center bg-light">
+                  <div class="fs-1 mb-1">💬</div>
+                  <strong class="d-block small text-dark">Chatterbox</strong>
+                  <small class="text-muted">Conversations with AI Tutor</small>
+                </div>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <div class="p-3 border rounded-3 text-center bg-light">
+                  <div class="fs-1 mb-1">🎯</div>
+                  <strong class="d-block small text-dark">Quiz Master</strong>
+                  <small class="text-muted">100% on Basics Quiz</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             VIEW 7: LEARNING HISTORY & MISTAKES
+             ================================================================= -->
+        <section class="view-section" id="view-history">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+              <h3 class="fw-bold mb-1 text-dark">Learning History & Mistakes Tracker</h3>
+              <p class="text-muted mb-0">Review all your learning activities and analyze mistakes with corrections.</p>
+            </div>
+            
+            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="exportHistoryCsvBtn">
+              <i class="bi bi-download me-1"></i> Export History CSV
+            </button>
+          </div>
+
+          <!-- Mistakes Tracker -->
+          <div class="card-custom p-4 mb-4">
+            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-exclamation-diamond-fill text-danger me-2"></i>Active Mistakes Tracker</h5>
+            <div class="table-responsive">
+              <table class="table align-middle table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Context</th>
+                    <th>Your Response</th>
+                    <th>Correct Answer</th>
+                    <th>Grammar Explanation</th>
+                    <th class="text-end">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="mistakesTableBody">
+                  <!-- Injected via history.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Chronological Activity Timeline -->
+          <div class="card-custom p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-stars text-emerald me-2"></i>Activity Timeline</h5>
+              <select class="form-select form-select-sm rounded-pill" id="historyTypeFilter" style="width: auto;">
+                <option value="all">All Types</option>
+                <option value="lesson">Lessons</option>
+                <option value="quiz">Quizzes</option>
+                <option value="chat">AI Tutor Chats</option>
+                <option value="vocab">Vocabulary</option>
+              </select>
+            </div>
+
+            <div id="historyTimeline">
+              <!-- Injected via history.js -->
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             VIEW 8: SETTINGS & LOCAL STORAGE MANAGER
+             ================================================================= -->
+        <section class="view-section" id="view-settings">
+          <div class="mb-4">
+            <h3 class="fw-bold mb-1 text-dark">Settings & Local Storage</h3>
+            <p class="text-muted mb-0">Configure your profile, Gemini AI key, and manage your browser local storage.</p>
+          </div>
+
+          <div class="row g-4">
+            <!-- Profile Settings -->
+            <div class="col-lg-6">
+              <div class="card-custom p-4 h-100">
+                <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-person-circle text-emerald me-2"></i>Profile Information</h5>
+                <form id="settingsProfileForm">
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold text-muted">Display Name</label>
+                    <input type="text" class="form-control" id="profileUsername" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold text-muted">Email Address</label>
+                    <input type="email" class="form-control" id="profileEmail" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold text-muted">Bio</label>
+                    <textarea class="form-control" id="profileBio" rows="2"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-emerald btn-sm px-4 rounded-pill">
+                    Save Profile
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Learning Preferences -->
+            <div class="col-lg-6">
+              <div class="card-custom p-4 h-100">
+                <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-sliders text-emerald me-2"></i>Learning Preferences</h5>
+                <form id="settingsPreferencesForm">
+                  <div class="row g-2 mb-3">
+                    <div class="col-6">
+                      <label class="form-label small fw-semibold text-muted">Target Language</label>
+                      <select class="form-select" id="prefTargetLang">
+                        <option value="Spanish">Spanish</option>
+                        <option value="French">French</option>
+                        <option value="German">German</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Japanese">Japanese</option>
+                        <option value="English">English</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small fw-semibold text-muted">Native Language</label>
+                      <select class="form-select" id="prefNativeLang">
+                        <option value="English">English</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="French">French</option>
+                        <option value="German">German</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="row g-2 mb-3">
+                    <div class="col-6">
+                      <label class="form-label small fw-semibold text-muted">Proficiency Level</label>
+                      <select class="form-select" id="prefProficiency">
+                        <option value="Beginner">Beginner (A1/A2)</option>
+                        <option value="Intermediate">Intermediate (B1/B2)</option>
+                        <option value="Advanced">Advanced (C1/C2)</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small fw-semibold text-muted">Daily Target (Minutes)</label>
+                      <input type="number" class="form-control" id="prefDailyMinutes" min="5" max="120" value="20">
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold text-muted">Primary Goal</label>
+                    <select class="form-select" id="prefGoal">
+                      <option value="Speaking & Conversation">Speaking & Conversation</option>
+                      <option value="Grammar Mastery">Grammar Mastery</option>
+                      <option value="Vocabulary Expansion">Vocabulary Expansion</option>
+                      <option value="Travel Readiness">Travel Readiness</option>
+                      <option value="Exam Preparation">Exam Preparation</option>
+                    </select>
+                  </div>
+
+                  <button type="submit" class="btn btn-emerald btn-sm px-4 rounded-pill">
+                    Save Preferences
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Google Gemini API Configuration -->
+            <div class="col-12">
+              <div class="card-custom p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                  <div>
+                    <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-cpu-fill text-emerald me-2"></i>Google Gemini AI Integration</h5>
+                    <small class="text-muted">Enter your Google Gemini API key to activate direct live AI responses. If omitted, built-in offline smart tutor runs automatically.</small>
+                  </div>
+                  <span id="geminiStatusBadge" class="badge bg-warning-subtle text-warning border border-warning p-2 px-3">
+                    Intelligent Local Fallback Active
+                  </span>
+                </div>
+
+                <div class="input-group mb-3">
+                  <span class="input-group-text bg-light"><i class="bi bi-key-fill"></i></span>
+                  <input type="password" class="form-control" id="settingsGeminiKey" placeholder="Paste your Gemini API key (AIzaSy...) from Google AI Studio">
+                  <button class="btn btn-outline-secondary" type="button" id="settingsGeminiKeyToggle">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn btn-outline-emerald" type="button" id="testGeminiKeyBtn">
+                    Test Key
+                  </button>
+                  <button class="btn btn-emerald" type="button" id="saveGeminiKeyBtn">
+                    Save Key
+                  </button>
+                </div>
+                <div class="text-muted small">
+                  <i class="bi bi-shield-lock me-1"></i> Your key is saved strictly in your browser's private <code>localStorage</code>. It is never transmitted to any third-party database.
+                </div>
+              </div>
+            </div>
+
+            <!-- LocalStorage Data Engine Management -->
+            <div class="col-12">
+              <div class="card-custom p-4 bg-light">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-database-fill-gear text-emerald me-2"></i>Browser LocalStorage Engine</h5>
+                    <span class="text-muted small" id="storageUsageText">0 KB used in browser localStorage</span>
+                  </div>
+                  <span class="badge badge-storage"><i class="bi bi-check2-circle"></i> Supabase Removed • LocalStorage Active</span>
+                </div>
+
+                <p class="text-muted small mb-4">
+                  All users, lessons, vocabulary, quizzes, chat messages, and learning metrics are preserved in your client browser storage. You can backup your data to a JSON file or restore anytime.
+                </p>
+
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-outline-dark btn-sm rounded-pill px-3" id="exportBackupBtn">
+                    <i class="bi bi-download me-1"></i> Download JSON Backup
+                  </button>
+
+                  <label class="btn btn-outline-secondary btn-sm rounded-pill px-3 mb-0" for="importBackupInput">
+                    <i class="bi bi-upload me-1"></i> Restore from JSON
+                    <input type="file" id="importBackupInput" accept=".json" class="d-none">
+                  </label>
+
+                  <button class="btn btn-outline-warning btn-sm rounded-pill px-3" id="resetDataBtn">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset to Sample Data
+                  </button>
+
+                  <button class="btn btn-outline-danger btn-sm rounded-pill px-3 ms-auto" id="clearDataBtn">
+                    <i class="bi bi-trash3 me-1"></i> Clear All Local Data
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODALS
+       ===================================================================== -->
+
+  <!-- 1. Interactive Lesson Viewer Modal -->
+  <div class="modal fade" id="lessonModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content rounded-4 border-0">
+        <div class="modal-header border-bottom bg-light">
+          <div>
+            <div class="d-flex gap-2 mb-1">
+              <span class="badge bg-emerald-subtle text-emerald" id="lessonModalLang">Spanish</span>
+              <span class="badge bg-light text-muted border" id="lessonModalLevel">Beginner</span>
+              <span class="badge bg-light text-muted border"><i class="bi bi-clock me-1"></i><span id="lessonModalDuration">15 min</span></span>
+            </div>
+            <h5 class="modal-title fw-bold text-dark" id="lessonModalTitle">Lesson Title</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        <div class="modal-body p-4">
+          <!-- Learning Objectives -->
+          <div class="mb-4">
+            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-compass text-emerald me-1"></i> Learning Objectives</h6>
+            <ul class="list-unstyled mb-0" id="lessonObjectivesList"></ul>
+          </div>
+
+          <!-- Vocabulary Cards -->
+          <div class="mb-4">
+            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-card-text text-emerald me-1"></i> Core Vocabulary</h6>
+            <div class="row" id="lessonVocabGrid"></div>
+          </div>
+
+          <!-- Grammar Explanation -->
+          <div class="mb-4">
+            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-mortarboard text-emerald me-1"></i> Grammar & Language Rules</h6>
+            <div id="lessonGrammarContent"></div>
+          </div>
+
+          <!-- Dialogue -->
+          <div class="mb-4">
+            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-chat-quote text-emerald me-1"></i> Real-World Dialogue</h6>
+            <div id="lessonDialogueContent"></div>
+          </div>
+
+          <!-- Practice Exercises -->
+          <div class="mb-4">
+            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-check2-circle text-emerald me-1"></i> Interactive Practice Checks</h6>
+            <div id="lessonExercisesContent"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer border-top bg-light justify-content-between">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-emerald rounded-pill px-4" id="completeLessonBtn">
+            Mark as Complete & Claim XP
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Custom Lesson Creator Modal -->
+  <div class="modal fade" id="customLessonModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content rounded-4 border-0">
+        <div class="modal-header border-bottom bg-light">
+          <h5 class="modal-title fw-bold text-dark"><i class="bi bi-journal-plus text-emerald me-2"></i>Create Custom Lesson</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="customLessonForm">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-muted">Lesson Title</label>
+              <input type="text" class="form-control" id="customLessonTitle" placeholder="e.g. Master Ordering Paella in Valencia" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small fw-semibold text-muted">Target Language</label>
+                <select class="form-select" id="customLessonLang">
+                  <option value="Spanish">Spanish</option>
+                  <option value="French">French</option>
+                  <option value="German">German</option>
+                  <option value="Italian">Italian</option>
+                  <option value="Japanese">Japanese</option>
+                  <option value="English">English</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold text-muted">Level</label>
+                <select class="form-select" id="customLessonLevel">
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+              </div>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small fw-semibold text-muted">Topic</label>
+                <input type="text" class="form-control" id="customLessonTopic" placeholder="e.g. Food & Wine" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold text-muted">Duration (mins)</label>
+                <input type="number" class="form-control" id="customLessonDuration" value="15" min="5">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-muted">Vocabulary Words (Word - Translation - Phonetic per line)</label>
+              <textarea class="form-control" id="customLessonVocab" rows="3" placeholder="La paella - The paella - lah pah-EH-yah&#10;El camarero - The waiter - ehl kah-mah-REH-roh"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer border-top bg-light">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-emerald rounded-pill px-4">Save Lesson</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Add Vocabulary Word Modal -->
+  <div class="modal fade" id="addWordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content rounded-4 border-0">
+        <div class="modal-header border-bottom bg-light">
+          <h5 class="modal-title fw-bold text-dark"><i class="bi bi-card-plus text-emerald me-2"></i>Add New Vocabulary Word</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="addWordForm">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-muted">Word in Target Language</label>
+              <input type="text" class="form-control" id="newWordText" placeholder="e.g. Despacio" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-muted">English Translation</label>
+              <input type="text" class="form-control" id="newWordTranslation" placeholder="e.g. Slowly" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small fw-semibold text-muted">Phonetic Guide</label>
+                <input type="text" class="form-control" id="newWordPhonetic" placeholder="e.g. dehs-PAH-syoh">
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold text-muted">Category</label>
+                <select class="form-select" id="newWordCategory">
+                  <option value="Greetings">Greetings</option>
+                  <option value="Courtesy">Courtesy</option>
+                  <option value="Dining">Dining</option>
+                  <option value="Directions">Directions</option>
+                  <option value="Travel">Travel</option>
+                  <option value="Communication">Communication</option>
+                </select>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-muted">Example Sentence</label>
+              <input type="text" class="form-control" id="newWordExample" placeholder="e.g. ¿Puede hablar más despacio, por favor?">
+            </div>
+          </div>
+          <div class="modal-footer border-top bg-light">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-emerald rounded-pill px-4">Add Word</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Interactive Quiz Runner Modal -->
+  <div class="modal fade" id="quizRunnerModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0">
+        <div class="modal-header border-bottom bg-light">
+          <div>
+            <h6 class="modal-title fw-bold text-dark" id="quizRunnerTitle">Quiz Title</h6>
+            <small class="text-muted">Question <span id="quizCurrentQNum">1</span> of <span id="quizTotalQuestions">5</span></small>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="progress" style="height: 6px; border-radius: 0;">
+          <div class="progress-bar bg-emerald" id="quizProgressBar" style="width: 20%;"></div>
+        </div>
+
+        <div class="modal-body p-4">
+          <h5 class="fw-bold text-dark mb-4" id="quizQuestionText">Question text goes here?</h5>
+          <div id="quizOptionsContainer" class="d-flex flex-column gap-2 mb-3"></div>
+          <div id="quizFeedbackBox" class="d-none"></div>
+        </div>
+
+        <div class="modal-footer border-top bg-light">
+          <button type="button" class="btn btn-emerald rounded-pill px-4 d-none" id="quizNextBtn">
+            Next Question
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Create Custom Quiz Modal -->
+  <div class="modal fade" id="createQuizModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content rounded-4 border-0">
+        <div class="modal-header border-bottom bg-light">
+          <h5 class="modal-title fw-bold text-dark"><i class="bi bi-patch-question-fill text-emerald me-2"></i>Create Custom Quiz</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="createQuizForm">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-muted">Quiz Title</label>
+              <input type="text" class="form-control" id="customQuizTitle" placeholder="e.g. Spanish Travel Essentials Quiz" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-muted">Topic</label>
+              <input type="text" class="form-control" id="customQuizTopic" placeholder="e.g. Airport & Navigation" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small fw-semibold text-muted">Language</label>
+                <select class="form-select" id="customQuizLang">
+                  <option value="Spanish">Spanish</option>
+                  <option value="French">French</option>
+                  <option value="German">German</option>
+                  <option value="Italian">Italian</option>
+                  <option value="Japanese">Japanese</option>
+                  <option value="English">English</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold text-muted">Difficulty</label>
+                <select class="form-select" id="customQuizLevel">
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-top bg-light">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-emerald rounded-pill px-4">Generate & Save Quiz</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Application Scripts (LocalStorage Engine & Controllers) -->
+  <script src="static/js/storage.js"></script>
+  <script src="static/js/charts.js"></script>
+  <script src="static/js/tutor.js"></script>
+  <script src="static/js/lessons.js"></script>
+  <script src="static/js/vocab.js"></script>
+  <script src="static/js/quizzes.js"></script>
+  <script src="static/js/analytics.js"></script>
+  <script src="static/js/history.js"></script>
+  <script src="static/js/settings.js"></script>
+  <script src="static/js/app.js"></script>
+</body>
+</html>
